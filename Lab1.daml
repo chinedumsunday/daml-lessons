@@ -1,77 +1,26 @@
-module Lab1 where 
-import DA.Time
-import DA.Date
+module Lab1 where
+import Daml.Script
 
-template CLPAccount
-    with 
-        customer: Party
-        airline: Party
-        name: Text
-        address: Text
-        email: Text
-        phone: Optional Text
-        accountTimestamp: Time
-        dob: Date
-        points: Int
-    where
-        signatory customer, airline
+quadFunction: Int -> Int -> Int -> Int
+quadFunction x y z = (3 * ( x * x)) + (2*y) + z
 
-template CLPApplication
-    with 
-        customer: Party
-        airline: Party
-        name: Text
-        address: Text
-        email: Text
-        phone: Optional Text
-        appTimestamp: Time
-        dob: Date
+quadLambda : Int -> Int -> Int -> Int
+quadLambda = \x y z -> (3 * ( x * x)) + (2*y) + z
 
-    
-    where 
-        signatory customer
-        observer airline
 
-        choice SubmitApplication: ContractId CLPApplication with
-            appCustomer: Party
-            appAirline: Party
-            customerName: Text
-            customerAddress: Text
-            customerEmail: Text
-            customerPhone: Optional Text
-            now: Time
-            customerDob: Date
+-- problem 2
+doubleMe: Int -> Int
+doubleMe x = x + x
+add: Int -> Int -> Int
+add x y = x + y
+doubleUs: Int -> Int -> Int 
+doubleUs x y = doubleMe x `add` doubleMe y
 
-                controller customer
-            do 
-                create CLPApplication with  
-                    customer = appCustomer 
-                    airline= appAirline
-                    name = customerName
-                    address = customerAddress 
-                    email = customerEmail
-                    phone = customerPhone
-                    appTimestamp =  now
-                    dob = customerDob
-        
-        choice AcceptApplication: ContractId CLPAccount with 
-            points: Int
-            accountTimestamp: Time
-                controller  airline
-            do 
-                time <- getTime
-                create CLPAccount with
-                    customer = customer 
-                    airline= airline
-                    name = name
-                    address = address 
-                    email = email
-                    phone = phone
-                    accountTimestamp =  time
-                    dob = dob
-                    points = 0
 
-        choice RejectApplication: Text
-                controller  airline
-            do 
-                return "Application rejected"
+
+testLab1: Script ()
+testLab1 = script do 
+    debug $ quadFunction 1 2 3
+    debug $ quadLambda 1 2 3
+    debug $ doubleMe 3
+    debug $ doubleUs 3 4

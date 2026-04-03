@@ -1,0 +1,18 @@
+module Functions where 
+import Daml.Script
+
+increment: Int -> Int 
+increment x = x + 1
+
+add: Int -> Int -> Int
+add x y = x + y
+
+area_form: Decimal -> Decimal -> Decimal
+area_form pi radius = pi * (radius * radius)
+
+testFunctions: Script ()
+testFunctions = script do
+    debug $ increment 5
+    debug $ (increment 4)
+    debug $ add 3 7
+    debug $ area_form 3.14 5.0

@@ -1,0 +1,45 @@
+module Lab5 where 
+import Daml.Script
+import DA.Map as Map
+import DA.List as List
+import DA.Text()
+import qualified DA.Text as Text
+
+song: List (Text, Text)
+song = [("do", "a deer, a female deer"), ("re", "a drop of golden sun"), ("mi", "a name, I call myself"), ("fa", "a long long way to run")]
+
+firstOnes : (List (Text, Text)) -> List Text
+firstOnes s = map (._1) s
+
+secondOnes: (List (Text, Text))-> List Text
+secondOnes s = map (._2) s
+
+
+testScript: Script()
+testScript = script do
+    debug $ firstOnes song 
+    debug $ secondOnes song
+    debug $ List.length song
+
+
+-- Problem 2 map
+
+multiTermFrequency: Text -> List Text -> List (Numeric 10)
+multiTermFrequency x y = map (\y -> intToNumeric(List.length(List.filter(==x) (Text.words y)))/ intToNumeric(List.length(Text.words y))) y
+
+-- Problem 2.2 foldr
+multiTermFrequency2: Text -> List Text -> List (Numeric 10)
+multiTermFrequency2 x y = foldr (\y acc -> (intToNumeric(List.length(List.filter(==x) (Text.words y))))/ (intToNumeric(List.length(Text.words y))) :: acc) [] y
+
+
+testMultiTermFrequency = script do 
+    let x = "hello"
+    let y = [ "hello from the other side I must have called a thousand times", 
+            "You say goodbye and I say hello hello hello",
+            "hello is it me you’re looking for",
+            "hello hello is anyone home"
+            ]
+
+    debug $ multiTermFrequency x y
+    debug $ multiTermFrequency2 x y
+    return()
