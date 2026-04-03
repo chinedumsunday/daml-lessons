@@ -1,0 +1,63 @@
+module CantonOnboarding where 
+
+template UserApplication 
+    with 
+        applicant: Party
+        username: Text
+        admin: Party
+
+    where 
+        signatory applicant 
+        observer admin
+
+        choice Approve: ContractId ApprovedUser
+            controller admin
+            do 
+                create ApprovedUser with
+                    user = applicant 
+                    username = username
+                    admin = admin
+        
+        choice Reject: ()
+            controller admin 
+            do
+                return ()
+
+
+template ApprovedUser 
+    with 
+        user: Party
+        username: Text 
+        admin: Party
+
+    where
+        signatory user 
+        observer admin
+
+        choice AllocateTokens: ContractId UserWallet with
+            initialBalance: Int
+                controller admin 
+            do
+                create UserWallet with 
+                    owner = user 
+                    balance = initialBalance
+                    admin = admin
+
+template UserWallet 
+    with   
+        owner: Party
+        balance: Int
+        admin: Party
+
+    where 
+        signatory owner 
+        observer admin
+
+        choice Deposit: ContractId UserWallet with
+            depositAmount: Int
+                controller admin
+            do 
+                create UserWallet with 
+                    owner = owner 
+                    balance = balance + depositAmount 
+                    admin = admin 

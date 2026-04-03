@@ -1,0 +1,28 @@
+module TestLoanRequest where 
+import Daml.Script
+import LoanRequest 
+import DA.Date
+
+testLoanRequest: Script ()
+testLoanRequest = script do 
+    borrower <- allocateParty "borrower"
+    lender <- allocateParty "lender"
+
+    borrow <- submit borrower do 
+        createCmd LoanRequest with 
+            borrower = borrower 
+            lender = lender 
+            amount = 100
+            reason = "Buy Goat"
+
+    approve <- submit lender do 
+        exerciseCmd borrow ApproveLoan with 
+            dueDate = date 2026 Apr 3
+
+    repay <- submit borrower do 
+        exerciseCmd approve Repay
+    
+    loan <- queryContractId borrower approve 
+    debug $ loan
+
+    -- debug $ repay

@@ -1,0 +1,96 @@
+module Cresco where 
+import Daml.Script
+import Lab2x
+import DA.Date (toDateUTC, date, Month(Jan), Month(Mar))
+import DA.Time (time)
+import DA.List (head)
+import DA.Optional (mapOptional)
+
+
+testActionsLoops: Script () 
+testActionsLoops = script do 
+    alice <- allocateParty "Alice"
+    bob <- allocateParty "Bob"
+    airline <- allocateParty "Epic Airlines"
+    
+    setTime (time (date 2023 Mar 01) 10 30 0)
+    now <- getTime 
+
+    -- Alice creates a blank CLPApplication
+    aliceCLPAppId <- submit alice do         
+        createCmd CLPApplication with  
+            customer = alice 
+            airline = airline 
+            id = ""
+            name = ""
+            address = ""
+            email = ""
+            phone = Some ""
+            timestamp = now 
+            dob = toDateUTC now
+
+    -- Alice submits the application with details filled in
+    aliceCLPAppId <- submit alice do 
+        exerciseCmd aliceCLPAppId SubmitApplication 
+            with
+                appCustomer = alice 
+                appAirline = airline
+                customerId = "123"
+                customerName = "Alice"
+                customerAddress = "123 Main St ABCD"
+                customerEmail = "alice@wonderland.io"
+                customerPhone = Some " 01-555-555-1234"
+                timeStamp = now
+                customerDob = date 2000 Jan 05    
+
+    -- Bob creates a blank application
+    bobCLPAppId <- submit bob do         
+        createCmd CLPApplication with  
+            customer = bob 
+            airline = airline 
+            id = ""
+            name = ""
+            address = ""
+            email = ""
+            phone = Some ""
+            timestamp = now 
+            dob = toDateUTC now
+
+    -- Bob submits application with details filled in
+    bobCLPAppId <- submit bob do 
+        exerciseCmd bobCLPAppId SubmitApplication 
+            with
+                appCustomer = bob 
+                appAirline = airline
+                customerId = "234"
+                customerName = "Bob"
+                customerAddress = "123 Spring St EFGH"
+                customerEmail = "bob@nomansland.io"
+                customerPhone = Some " 01-555-555-5678"
+                timeStamp = now
+                customerDob = date 2010 Jan 05
+
+    allApplications <- query @CLPApplication airline
+    let allApplicationCids = map fst allApplications
+    let allCustomerIds = map (\x -> (snd x).id) allApplications
+    let allCidsAndIds = zip allApplicationCids allCustomerIds
+    debug allApplications
+    debug allApplicationCids
+    debug allCidsAndIds
+
+    allAccountOptions <- forA allApplicationCids (\cid -> 
+        submit airline do
+            exerciseCmd cid ReviewApplication)
+    
+    let allAccountCids = mapOptional (\x -> x) allAccountOptions
+    
+    forA allAccountCids (\cid ->
+        submit airline do
+            exerciseCmd cid AddPoints with pointsToAdd = 1000)
+
+    allAccountTuples <- query @CLPAccount airline
+
+    debug allAccountCids 
+    debug allAccountTuples 
+
+    return ()

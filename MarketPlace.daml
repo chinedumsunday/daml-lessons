@@ -1,0 +1,61 @@
+module MarketPlace where 
+
+template MarketPlaceListing 
+    with 
+        seller: Party
+        buyer: Party
+        itemName: Text
+        price: Int
+
+    where 
+        signatory seller 
+        observer buyer 
+
+        choice MakeOffer: ContractId PendingOffer 
+            controller buyer 
+            do
+            create PendingOffer with 
+                seller 
+                buyer
+                itemName
+                price 
+
+        choice CancelListing: ()
+            controller seller 
+            do
+                return ()
+
+
+template PendingOffer
+    with 
+        seller: Party
+        buyer: Party
+        itemName: Text 
+        price: Int
+
+    where 
+        signatory buyer, seller 
+    
+        choice AcceptOffer: ContractId SaleReceipt
+            controller seller 
+            do 
+                create SaleReceipt with 
+                    seller
+                    buyer 
+                    itemName
+                    price 
+
+        choice DeclineOffer: ()
+                controller seller 
+            do 
+                return ()
+
+template SaleReceipt 
+    with 
+        seller: Party
+        buyer: Party
+        itemName: Text
+        price: Int
+
+    where   
+        signatory buyer, seller 

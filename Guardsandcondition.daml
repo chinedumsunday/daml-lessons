@@ -1,0 +1,31 @@
+module Guardsandcondition where 
+
+template VaultDeposit 
+    with 
+    owner: Party
+    balance: Int
+
+        where 
+            signatory owner
+            choice Deposit: ContractId VaultDeposit 
+                with 
+                    depositAmount: Int
+                    owner: Party
+                controller owner
+                do 
+                    create VaultDeposit with
+                        owner = owner 
+                        balance = balance + depositAmount
+        
+
+            choice Withdraw: ContractId VaultDeposit 
+                with 
+                    withdrawAmount: Int
+                    owner:Party
+                controller owner
+                do 
+                    assertMsg "withdraw amount greater than balance" (withdrawAmount < balance)
+                    create VaultDeposit with 
+                        owner = owner 
+                        balance = balance - withdrawAmount
+            

@@ -1,0 +1,93 @@
+module Lab2 where 
+import DA.Time
+import DA.Date
+import DA.Optional
+
+template CLPAccount
+    with 
+        id: Text
+        customer: Party
+        airline: Party
+        name: Text
+        address: Text
+        email: Text
+        phone: Optional Text
+        accountTimestamp: Time
+        dob: Date
+        points: Int
+    where
+        signatory customer, airline
+
+        key (airline, id): (Party, Text)
+        maintainer key._1
+
+template CLPApplication
+    with 
+        id: Text
+        customer: Party
+        airline: Party
+        name: Text
+        address: Text
+        email: Text
+        phone: Optional Text
+        timestamp: Time
+        dob: Date
+        
+
+    
+    where 
+        signatory customer
+        observer airline
+
+        choice SubmitApplication: ContractId CLPApplication with
+            customerId: Text
+            appCustomer: Party
+            appAirline: Party
+            customerName: Text
+            customerAddress: Text
+            customerEmail: Text
+            customerPhone: Optional Text
+            timeStamp: Time
+            customerDob: Date
+                controller customer
+            
+            do 
+                create CLPApplication with 
+                    id = customerId
+                    customer = appCustomer 
+                    airline= appAirline
+                    name = customerName
+                    address = customerAddress 
+                    email = customerEmail
+                    phone = customerPhone
+                    timestamp =  timeStamp
+                    dob = customerDob
+                    
+
+        choice ReviewApplication: Optional (ContractId CLPAccount) with
+          controller airline
+          do 
+            -- 1. Use lookupByKey to check for existence
+            maybeAccount <- lookupByKey @CLPAccount (airline, id)
+            
+            if isNone maybeAccount 
+                then do
+                    -- 2. Capture the result of 'create' using the <- arrow
+                    newAccountId <- create CLPAccount with  
+                        id = id
+                        customer = customer
+                        airline = airline
+                        name = name
+                        address = address 
+                        email = email
+                        phone = phone
+                        accountTimestamp = timestamp
+                        dob = dob
+                        points = 0
+                    
+                    -- 3. Return the captured ContractId wrapped in Some
+                    return (Some newAccountId)
+                else do 
+                    return None
+
+

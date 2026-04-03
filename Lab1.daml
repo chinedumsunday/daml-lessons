@@ -1,0 +1,77 @@
+module Lab1 where 
+import DA.Time
+import DA.Date
+
+template CLPAccount
+    with 
+        customer: Party
+        airline: Party
+        name: Text
+        address: Text
+        email: Text
+        phone: Optional Text
+        accountTimestamp: Time
+        dob: Date
+        points: Int
+    where
+        signatory customer, airline
+
+template CLPApplication
+    with 
+        customer: Party
+        airline: Party
+        name: Text
+        address: Text
+        email: Text
+        phone: Optional Text
+        appTimestamp: Time
+        dob: Date
+
+    
+    where 
+        signatory customer
+        observer airline
+
+        choice SubmitApplication: ContractId CLPApplication with
+            appCustomer: Party
+            appAirline: Party
+            customerName: Text
+            customerAddress: Text
+            customerEmail: Text
+            customerPhone: Optional Text
+            now: Time
+            customerDob: Date
+
+                controller customer
+            do 
+                create CLPApplication with  
+                    customer = appCustomer 
+                    airline= appAirline
+                    name = customerName
+                    address = customerAddress 
+                    email = customerEmail
+                    phone = customerPhone
+                    appTimestamp =  now
+                    dob = customerDob
+        
+        choice AcceptApplication: ContractId CLPAccount with 
+            points: Int
+            accountTimestamp: Time
+                controller  airline
+            do 
+                time <- getTime
+                create CLPAccount with
+                    customer = customer 
+                    airline= airline
+                    name = name
+                    address = address 
+                    email = email
+                    phone = phone
+                    accountTimestamp =  time
+                    dob = dob
+                    points = 0
+
+        choice RejectApplication: Text
+                controller  airline
+            do 
+                return "Application rejected"

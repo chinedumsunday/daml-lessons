@@ -1,0 +1,40 @@
+module Tokenoffer where
+
+template Token 
+    with 
+        recipient: Party
+        amount: Int 
+
+    where 
+        signatory recipient
+
+template TokenOffer 
+    with 
+        issuer: Party
+        recipient: Party 
+        amount: Int 
+
+    where 
+        signatory issuer
+        observer recipient 
+
+        choice AcceptOffer: ContractId Token 
+            with
+                recipient: Party
+                amount: Int
+            controller recipient
+            do 
+                create Token 
+                    with 
+                        recipient 
+                        amount 
+
+        choice RejectOffer: ()
+            controller recipient 
+            do 
+                return ()
+
+
+
+        
+        

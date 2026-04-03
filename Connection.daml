@@ -1,0 +1,15 @@
+module Connection where 
+
+template ConnectionRequest 
+    with 
+        sender: Party
+        receiver: Party
+        messageRequest: Text
+    where 
+        signatory sender
+        observer receiver
+
+        choice Accept: ()
+            controller receiver 
+                do 
+                    return()

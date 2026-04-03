@@ -1,0 +1,28 @@
+module TestCantonOnboarding where 
+import CantonOnboarding 
+import Daml.Script 
+
+testCantonOnboarding: Script()
+testCantonOnboarding = script do 
+    applicant <- allocateParty "applicant"
+    admin <- allocateParty "admin"
+
+    apply <- submit applicant do 
+        createCmd UserApplication with 
+            applicant = applicant 
+            username = "bob"
+            admin = admin 
+
+    approve <- submit admin do 
+        exerciseCmd apply Approve 
+    
+    allocate <- submit admin do 
+        exerciseCmd approve AllocateTokens with 
+            initialBalance = 0
+
+    deposit <-submit admin do 
+        exerciseCmd allocate Deposit with 
+            depositAmount = 100 
+
+    balance <- queryContractId applicant deposit
+    debug $ balance 

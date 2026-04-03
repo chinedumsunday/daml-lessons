@@ -1,0 +1,28 @@
+module TestMarketPlace where 
+import MarketPlace 
+import Daml.Script 
+
+
+testMarketPlace: Script ()
+
+testMarketPlace = script do 
+    seller <- allocateParty "seller"
+    buyer <- allocateParty "buyer"
+
+    listAsset <- submit seller do 
+                    createCmd MarketPlaceListing with
+                        seller = seller 
+                        buyer = buyer 
+                        itemName = "Vance Shoes"
+                        price = 1000
+
+    makeOffer <- submit buyer do 
+                    exerciseCmd listAsset MakeOffer 
+                
+    acceptOffer <- submit seller do 
+                    exerciseCmd makeOffer AcceptOffer
+
+    
+    receipt <- queryContractId seller acceptOffer 
+
+    debug $ receipt 

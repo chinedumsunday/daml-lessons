@@ -1,0 +1,25 @@
+module TestTokenOffer where
+import Tokenoffer
+import Daml.Script
+
+tokenOfferTest: Script ()
+tokenOfferTest = script do 
+    issuer <- allocateParty "issuer"
+    recipient <- allocateParty "recipient"
+
+    issuerSend <- submit issuer do 
+        createCmd TokenOffer with 
+            issuer = issuer
+            recipient = recipient 
+            amount = 100
+
+    recipientReceive <- submit recipient do 
+        exerciseCmd issuerSend AcceptOffer with 
+            recipient = recipient 
+            amount = 100
+    
+    balance <- queryContractId recipient recipientReceive
+    debug $ balance 
+
+
+                    

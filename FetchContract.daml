@@ -1,0 +1,36 @@
+module FetchContract where 
+
+template Account with 
+    owner: Party
+    balance: Int
+    
+where 
+        signatory owner 
+    
+    choice GetBalance: Int 
+    controller owner
+    do 
+        account <- fetch self
+        return account.balance 
+
+
+template Payment with 
+    sender: Party
+    receiver: Party
+    amount: Int
+
+where 
+    signatory sender
+    observer receiver
+
+    choice ExecutePayment: ContractId Account
+    with
+        accountCid: ContractId Account
+    controller sender
+    do
+        account <- fetch accountCid
+        assertMsg "balance is enough" (account.balance >= amount)
+        create Account 
+            with 
+                account.balance - amount 
+                account.owner

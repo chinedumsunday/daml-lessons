@@ -1,0 +1,42 @@
+module MultiSigTreasury where 
+
+template ReleaseProposal with 
+    admin1: Party
+    admin2: Party
+    recipient: Party
+    amount: Int
+    reason: Text
+
+        where 
+            signatory admin1
+            observer admin2
+        
+            choice Countersign: ContractId TreasuryRelease  
+                controller admin2
+                do 
+                    create TreasuryRelease with
+                        admin1
+                        admin2
+                        recipient
+                        amount 
+            
+            choice VetoRelease: ()
+                controller admin2
+                do
+                    return ()
+        
+
+template TreasuryRelease with 
+    admin1: Party
+    admin2: Party
+    recipient: Party
+    amount: Int
+
+        where
+            signatory admin1, admin2 
+            observer recipient 
+        
+            choice ExecuteRelease: ()
+                controller recipient 
+                do
+                    return ()

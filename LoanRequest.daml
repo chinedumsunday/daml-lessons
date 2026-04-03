@@ -1,0 +1,44 @@
+module LoanRequest where 
+import DA.Date
+
+template LoanAgreement 
+    with 
+        borrower: Party 
+        lender: Party
+        amount: Int 
+        dueDate: Date 
+    where 
+        signatory borrower
+        signatory lender
+
+        choice Repay: ()
+            controller borrower 
+            do
+                return () 
+
+template LoanRequest 
+    with 
+        borrower: Party
+        lender: Party
+        amount: Int
+        reason: Text 
+
+    where 
+        signatory borrower
+        observer lender 
+
+        choice ApproveLoan: ContractId LoanAgreement 
+            with 
+                dueDate: Date
+                    controller lender 
+                do
+                    create LoanAgreement with 
+                        borrower =  borrower
+                        lender = lender 
+                        amount = amount 
+                        dueDate = dueDate
+
+        choice RejectLoan: ()
+                controller lender 
+            do 
+                return ()

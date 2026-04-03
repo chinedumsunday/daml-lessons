@@ -1,0 +1,16 @@
+module UserProfile where 
+
+template UserProfile with 
+    name: Text
+    party: Party
+where
+    signatory party
+
+    choice UpdateName: ContractId UserProfile
+        with
+            newName: Text
+        controller party 
+        do
+          create this with name = newName
+          
+            

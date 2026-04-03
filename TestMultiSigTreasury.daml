@@ -1,0 +1,28 @@
+module TestMultiSigTreasury where 
+import MultiSigTreasury
+import Daml.Script
+
+testMultiSigTreasury: Script ()
+testMultiSigTreasury = script do 
+    admin1 <- allocateParty "admin1"
+    admin2 <- allocateParty "admin2"
+    recipient <- allocateParty "recipient"
+
+
+    release <- submit admin1 do 
+        createCmd ReleaseProposal with 
+            admin1
+            admin2
+            recipient
+            amount = 5000000000
+            reason = "I need to buy coffee for claude, its been really helpful "
+
+    countersign <- submit admin2 do 
+        exerciseCmd release Countersign 
+    
+    releaseUser <- submit recipient do 
+        exerciseCmd countersign ExecuteRelease 
+    
+    balance <- queryContractId recipient countersign
+
+    debug $ balance 
